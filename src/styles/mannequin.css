@@ -1,0 +1,31 @@
+/* Mannequin visualization theming */
+
+/* Light mode variables */
+:root {
+  --mannequin-bg: hsl(60, 33%, 98%);
+  --mannequin-body: hsl(0, 0%, 98%);
+  --mannequin-body-border: hsl(0, 0%, 88%);
+  --mannequin-stand: hsl(0, 0%, 70%);
+  --mannequin-stand-base: hsl(0, 0%, 55%);
+  --mannequin-grid: hsl(0, 0%, 90%);
+  --mannequin-grid-text: hsl(24, 25%, 72%);
+  --mannequin-point: hsl(20, 14.3%, 4.1%);
+  --mannequin-point-circle: hsl(0, 0%, 46%);
+  --mannequin-label-line: hsl(24, 25%, 72%);
+  --mannequin-label-text: hsl(24, 25%, 72%);
+}
+
+/* Dark mode variables */
+.dark {
+  --mannequin-bg: hsl(240, 10%, 12%);
+  --mannequin-body: hsl(240, 5%, 20%);
+  --mannequin-body-border: hsl(240, 5%, 32%);
+  --mannequin-stand: hsl(240, 5%, 40%);
+  --mannequin-stand-base: hsl(240, 5%, 30%);
+  --mannequin-grid: hsl(240, 5%, 26%);
+  --mannequin-grid-text: hsl(24, 15%, 58%);
+  --mannequin-point: hsl(0, 0%, 98%);
+  --mannequin-point-circle: hsl(240, 5%, 65%);
+  --mannequin-label-line: hsl(24, 15%, 58%);
+  --mannequin-label-text: hsl(24, 15%, 58%);
+} 

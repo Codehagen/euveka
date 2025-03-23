@@ -26,7 +26,15 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import { Save, SendHorizontal, Loader2 } from "lucide-react";
+import { Save, SendHorizontal, Loader2, Info, Bluetooth } from "lucide-react";
+import { BluetoothController } from "@/components/bluetooth-controller";
+import { useBluetooth } from "@/hooks/use-bluetooth";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface DeviceControllerProps {
   onMeasurementsUpdate?: (measurements: Measurements) => void;
@@ -40,6 +48,15 @@ export function DeviceController({
   const [parameters, setParameters] =
     useState<Measurements>(DEFAULT_MEASUREMENTS);
   const [isSending, setIsSending] = useState(false);
+  const [activeTab, setActiveTab] = useState("standard");
+
+  // Initialize Bluetooth hook
+  const {
+    isAvailable: isBluetoothAvailable,
+    isConnected: isBluetoothConnected,
+    connectToDevice,
+    sendData,
+  } = useBluetooth();
 
   // Update a single parameter
   const updateParameter = (key: keyof Measurements, value: number) => {
@@ -59,32 +76,60 @@ export function DeviceController({
   // Calculate mannequin dimensions
   const mannequinDimensions = calculateMannequinDimensions(parameters);
 
-  // Handle sending to device
-  const sendToDevice = () => {
+  // Handle sending to device - either via Bluetooth or simulation
+  const sendToDevice = async () => {
     setIsSending(true);
     console.log("Sending measurements to device:", parameters);
 
-    // Simulate network request with random success/failure
-    setTimeout(() => {
-      const isSuccess = Math.random() < 0.7; // 70% success rate
+    // If connected to Bluetooth, use that
+    if (isBluetoothConnected) {
+      try {
+        // Convert measurements to array
+        const measurementValues = Object.values(parameters);
+        const success = await sendData(measurementValues);
 
-      if (isSuccess) {
-        toast.success("Parameters successfully sent to device");
-      } else {
-        toast.error("Failed to send parameters to device. Please try again.");
+        if (success) {
+          toast.success("Parameters successfully sent to Bluetooth device");
+        } else {
+          toast.error("Failed to send parameters to Bluetooth device");
+        }
+      } catch (error) {
+        console.error("Bluetooth send error:", error);
+        toast.error("Error sending to Bluetooth device");
+      } finally {
+        setIsSending(false);
       }
+    } else {
+      // Simulate network request with random success/failure
+      setTimeout(() => {
+        const isSuccess = Math.random() < 0.7; // 70% success rate
 
-      setIsSending(false);
-    }, 1500);
+        if (isSuccess) {
+          toast.success("Parameters successfully sent to device");
+        } else {
+          toast.error("Failed to send parameters to device. Please try again.");
+        }
+
+        setIsSending(false);
+      }, 1500);
+    }
+  };
+
+  // Prompt to connect to Bluetooth if available but not connected
+  const handleBluetoothPrompt = () => {
+    if (isBluetoothAvailable && !isBluetoothConnected) {
+      setActiveTab("bluetooth");
+    }
   };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <Tabs defaultValue="standard" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex items-center justify-between mb-4">
           <TabsList>
             <TabsTrigger value="standard">Standard View</TabsTrigger>
             <TabsTrigger value="advanced">Advanced View</TabsTrigger>
+            <TabsTrigger value="bluetooth">Bluetooth</TabsTrigger>
           </TabsList>
 
           <div className="flex items-center gap-2">
@@ -103,24 +148,51 @@ export function DeviceController({
               </SheetContent>
             </Sheet>
 
-            <Button
-              size="sm"
-              className="gap-2"
-              onClick={sendToDevice}
-              disabled={isSending}
-            >
-              {isSending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <SendHorizontal className="h-4 w-4" />
-                  Send to Device
-                </>
-              )}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    className="gap-2"
+                    onClick={sendToDevice}
+                    disabled={isSending}
+                  >
+                    {isSending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        {isBluetoothConnected && (
+                          <Bluetooth className="h-3.5 w-3.5 mr-1 text-blue-400" />
+                        )}
+                        <SendHorizontal className="h-4 w-4" />
+                        Send to Device
+                      </>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isBluetoothConnected
+                    ? "Send to connected Bluetooth device"
+                    : isBluetoothAvailable
+                    ? "Connect to a Bluetooth device in the Bluetooth tab"
+                    : "Simulated device communication"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            {isBluetoothAvailable && !isBluetoothConnected && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleBluetoothPrompt}
+                className="text-blue-500"
+              >
+                <Bluetooth className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 
@@ -175,6 +247,10 @@ export function DeviceController({
               </p>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="bluetooth" className="space-y-6">
+          <BluetoothController measurements={parameters} />
         </TabsContent>
       </Tabs>
     </div>

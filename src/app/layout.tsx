@@ -8,6 +8,7 @@ import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import "./globals.css";
+import { ToastProvider } from "@/components/custom-ui/euveka-toast";
 
 export const metadata: Metadata = constructMetadata({
   title: `${siteConfig.name} | ${siteConfig.description}`,
@@ -37,16 +38,18 @@ export default function RootLayout({
           "min-h-screen bg-background antialiased w-full mx-auto scroll-smooth font-sans"
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-        >
-          {children}
-          <Toaster position="bottom-right" closeButton richColors />
-          <ThemeToggle />
-          <TailwindIndicator />
-        </ThemeProvider>
+        <ToastProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+          >
+            {children}
+            <Toaster position="bottom-right" closeButton richColors />
+            <ThemeToggle />
+            <TailwindIndicator />
+          </ThemeProvider>
+        </ToastProvider>
       </body>
     </html>
   );

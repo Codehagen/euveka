@@ -1,16 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  LayoutDashboard,
-  Frame,
-  PieChart,
-  Map,
-  Layers,
-  Settings2,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { LayoutDashboard, Layers, Settings2, Moon, Sun } from "lucide-react";
 
 import {
   Sidebar,
@@ -44,6 +35,11 @@ const navItems = [
     title: "Settings",
     icon: Settings2,
     href: "/settings",
+  },
+  {
+    title: "Custom Components",
+    icon: Layers,
+    href: "/custom-components",
   },
 ];
 
